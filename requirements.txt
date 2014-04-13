@@ -1,0 +1,9 @@
+fitbit==0.0.5
+httplib2==0.8
+oauth2==1.5.211
+oauthlib==0.6.1
+python-dateutil==2.2
+requests==2.2.1
+requests-oauthlib==0.4.0
+six==1.6.1
+wsgiref==0.1.2

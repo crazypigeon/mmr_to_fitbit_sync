@@ -10,4 +10,4 @@ While most of this stuff should work with all activity types in Map My Fitness, 
 
 You can generate the user key and secret for the FitBit API by running this script:
 
-> venv/lib/python2.7/site-packages/fitbit/gather_keys_cli.py <client_key> <client_secret>
+> venv/lib/python2.7/site-packages/fitbit/gather\_keys\_cli.py \<client\_key\> \<client\_secret\>
