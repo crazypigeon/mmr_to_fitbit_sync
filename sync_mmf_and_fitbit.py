@@ -5,7 +5,11 @@ from pytz import timezone
 
 from config import *
 
+debug = False
+
 METERS_IN_A_MILE = 1609.34
+
+pacific_timezone = timezone('America/Los_Angeles')
 
 mmf = MapMyFitness(api_key=MMF_CLIENT_KEY, access_token=MMF_ACCESS_TOKEN)
 
@@ -15,32 +19,45 @@ fitbit_client = fitbit.Fitbit( FITBIT_CLIENT_KEY, FITBIT_CLIENT_SECRET, user_key
 workouts = mmf.workout.search(user=MMF_USER_ID,activity_type=MMF_ACTIVITY_TYPE)
 
 for workout in workouts:
-  # 2014-04-10 16:24:12+00:00
-
-  meh = workout.start_datetime.strftime( '%Y-%m-%d %H:%M:%S%z' )
-
-  print meh
-
-  print workout.name
-  print "\t" + str( workout.start_datetime )
-  print "\t" + str( workout.distance_total )
-  print "\t" + str( workout.elapsed_time_total )
-
-  pacific_timezone = timezone('America/Los_Angeles')
 
   start_time = workout.start_datetime.astimezone( pacific_timezone ).strftime( '%H:%M' )
   start_date = workout.start_datetime.astimezone( pacific_timezone ).strftime( '%Y-%m-%d' )
-
-  # Log the activity in FitBit
-  fitbit_client.log_activity(
-     { 
-        'activityId' : FITBIT_ACTIVITY_ID, 
-        'startTime' : start_time,
-        'durationMillis': int( 1000 * workout.elapsed_time_total ),
-        'date' : start_date,
-        'distance' : workout.distance_total / METERS_IN_A_MILE
-     }
-  )
+  duration_milliseconds = int( 1000 * workout.elapsed_time_total )
+  distance = workout.distance_total / METERS_IN_A_MILE
   
+  dupe = False
 
-  
+  # Make sure we didn't already log this activity
+  for activity in fitbit_client.activities( date = start_date )['activities']:
+    if start_time == activity['startTime'] and duration_milliseconds == activity['duration']:
+      dupe = True
+      break
+
+  # Log the activity in FitBit if it's not a duplicate
+  if not dupe:
+    fitbit_client.log_activity(
+       { 
+          'activityId' : FITBIT_ACTIVITY_ID, 
+          'startTime' : start_time,
+          'durationMillis': duration_milliseconds,
+          'date' : start_date,
+          'distance' : distance
+       }
+    )
+    print "Created an activity record in FitBit for the workout named: " + workout.name 
+  # Otherwise, skip
+  else:
+    if debug:
+      print 'Activity record for the workout named "'+ workout.name + '" already exists in FitBit!'
+      print "Fitbit raw data"
+      print activity['startTime']
+      print start_date
+      print activity['duration']
+      print activity['distance']
+
+  if debug:
+    print "MMR raw data"
+    print start_time
+    print start_date
+    print duration_milliseconds
+    print distance
