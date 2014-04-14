@@ -1,4 +1,5 @@
 venv
 config.py
+mapmyfitness
 *.pyc
 *.swp
