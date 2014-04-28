@@ -1,6 +1,6 @@
 from mapmyfitness import MapMyFitness
 import fitbit
-from datetime import datetime
+from datetime import datetime, timedelta
 from pytz import timezone
 
 from config import *
@@ -15,12 +15,18 @@ mmf = MapMyFitness(api_key=MMF_CLIENT_KEY, access_token=MMF_ACCESS_TOKEN)
 
 fitbit_client = fitbit.Fitbit( FITBIT_CLIENT_KEY, FITBIT_CLIENT_SECRET, user_key=FITBIT_USER_KEY, user_secret=FITBIT_USER_SECRET)
 
+# Only grab records from up to 2 weeks ago
+sync_period = timedelta( weeks=2 )
+current_datetime = datetime.now()
+
+started_after = current_datetime - sync_period
+
 # Grab all bike workouts from map my fitness
 workouts = []
 
 # Iterate through all valid activity types
 for activity_id in MMF_BIKE_ACTIVITY_TYPES: 
-  workouts = workouts + mmf.workout.search(user=MMF_USER_ID,activity_type=activity_id)
+  workouts = workouts + mmf.workout.search( user=MMF_USER_ID, activity_type=activity_id, started_after=started_after )
 
 for workout in workouts:
 
