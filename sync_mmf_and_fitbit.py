@@ -16,7 +16,11 @@ mmf = MapMyFitness(api_key=MMF_CLIENT_KEY, access_token=MMF_ACCESS_TOKEN)
 fitbit_client = fitbit.Fitbit( FITBIT_CLIENT_KEY, FITBIT_CLIENT_SECRET, user_key=FITBIT_USER_KEY, user_secret=FITBIT_USER_SECRET)
 
 # Grab all bike workouts from map my fitness
-workouts = mmf.workout.search(user=MMF_USER_ID,activity_type=MMF_ACTIVITY_TYPE)
+workouts = []
+
+# Iterate through all valid activity types
+for activity_id in MMF_BIKE_ACTIVITY_TYPES: 
+  workouts = workouts + mmf.workout.search(user=MMF_USER_ID,activity_type=activity_id)
 
 for workout in workouts:
 
