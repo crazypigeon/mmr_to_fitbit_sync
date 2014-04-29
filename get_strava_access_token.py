@@ -16,6 +16,10 @@ if len( sys.argv ) == 1:
   print "And then re-run this script like so: "
   print "\t" + sys.argv[0] + " <code>"
 
+elif sys.argv[1] == 'test':
+  client = Client( access_token=STRAVA_ACCESS_TOKEN)
+  print client.get_athlete()
+
 else:
   code = sys.argv[1]
   access_token = client.exchange_code_for_token(client_id=STRAVA_CLIENT_ID,
