@@ -1,8 +1,8 @@
 ## Overview
 
-This is a short script that will take data from the Map My Ride service and transfer it over to FitBit as activity records.
+This is a short script that will take data from the Map My Ride and Strava services and transfer it over to FitBit as activity records.
 
-While most of this stuff should work with all activity types in Map My Fitness, I am only focused on the "Road Cycling" activity type because it maps directly to the "Bicycling" FitBit activity and I'm too lazy to implement anything else :).
+While most of this stuff should work with all activity types in Map My Fitness, I am only focused on the bicycling activity types because they map directly to the "Bicycling" FitBit activity and that's what I care about at the moment. I will likely add support for other activities as I try them :)
 
 ## Requirements
 
