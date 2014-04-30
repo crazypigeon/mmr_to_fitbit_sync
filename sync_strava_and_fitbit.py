@@ -5,7 +5,7 @@ from pytz import timezone
 
 from config import *
 
-debug = True
+debug = False
 
 METERS_IN_A_MILE = 1609.34
 
@@ -70,7 +70,7 @@ for activity in activities:
       print fitbit_activity['distance']
 
   if debug:
-    print "MMR raw data"
+    print "Strava raw data"
     print start_time
     print start_date
     print duration_milliseconds
