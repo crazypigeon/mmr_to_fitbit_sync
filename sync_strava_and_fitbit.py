@@ -30,7 +30,7 @@ activities = strava.get_activities( limit = 10 )
 
 for activity in activities:
   if activity.type != 'Ride':
-    next
+    continue
 
   start_datetime = activity.start_date_local
 
