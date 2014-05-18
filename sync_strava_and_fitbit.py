@@ -29,9 +29,6 @@ activities = strava.get_activities( limit = 10 )
 #  workouts = workouts + mmf.workout.search( user=MMF_USER_ID, activity_type=activity_id, started_after=started_after )
 
 for activity in activities:
-  if activity.type != 'Ride':
-    continue
-
   start_datetime = activity.start_date_local
 
   start_date = start_datetime.strftime( '%Y-%m-%d' )
@@ -41,6 +38,21 @@ for activity in activities:
   
   dupe = False
 
+  activity_information = { 
+        'startTime' : start_time,
+        'durationMillis': duration_milliseconds,
+        'date' : start_date,
+        'distance' : distance
+     }
+
+  # If it's a ride in strava we have a direct mapping to FitBit, otherwise we need to use a custom activity type
+  if activity.type == 'Ride':
+    activity_information['activityId'] = FITBIT_BIKE_ACTIVITY_ID
+  elif activity.type == 'Hike':
+    activity_information['activityId'] = FITBIT_HIKE_ACTIVITY_ID
+  else:
+    continue
+
   # Make sure we didn't already log this activity
   for fitbit_activity in fitbit_client.activities( date = start_date )['activities']:
     if start_time == fitbit_activity['startTime'] and duration_milliseconds == fitbit_activity['duration']:
@@ -49,15 +61,7 @@ for activity in activities:
 
   # Log the activity in FitBit if it's not a duplicate
   if not dupe:
-    fitbit_client.log_activity(
-       { 
-          'activityId' : FITBIT_ACTIVITY_ID, 
-          'startTime' : start_time,
-          'durationMillis': duration_milliseconds,
-          'date' : start_date,
-          'distance' : distance
-       }
-    )
+    fitbit_client.log_activity( activity_information )
     print "Created an activity record in FitBit for the workout named: " + activity.name 
   # Otherwise, skip
   else:
