@@ -90,3 +90,18 @@ activity_name = meow['results']['activities'][0]['activity']['activityName']['va
 activity_type = meow['results']['activities'][0]['activity']['activityType']['key']
 
 gpx_file = session.get( 'http://connect.garmin.com/proxy/activity-service-1.1/gpx/activity/' + activity_id + '?full=true' ).text
+
+# Replace Garmin Connect metadata with metadata for the device I'm using
+gpx_file = gpx_file.replace( 'Garmin Connect', 'Garmin Edge 810' )
+
+moo = open( 'test.gpx', 'w' )
+moo.write( gpx_file )
+moo.close()
+
+gpx_file = open( 'test.gpx', 'r' )
+
+
+from stravalib import Client, unithelper
+strava = Client( access_token=config.STRAVA_ACCESS_TOKEN)
+
+strava.upload_activity( gpx_file, 'gpx' )
