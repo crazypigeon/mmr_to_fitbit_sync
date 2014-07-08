@@ -3,3 +3,5 @@ config.py
 mapmyfitness
 *.pyc
 *.swp
+*.gpx
+*.pkl

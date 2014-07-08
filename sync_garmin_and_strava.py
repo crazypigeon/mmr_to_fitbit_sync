@@ -1,10 +1,13 @@
 import config
 import requests
 import re
-
+import pickle
+import os
+import json
+import stravalib
 
 #
-## Shamelessly stolen and modified from https://github.com/cpfair/tapiriik/blob/master/tapiriik/services/GarminConnect/garminconnect.py#L188
+## "Borrowed" and modified from https://github.com/cpfair/tapiriik/blob/master/tapiriik/services/GarminConnect/garminconnect.py#L188
 #
 
 def _rate_limit():
@@ -72,36 +75,69 @@ def _get_session():
       raise APIException("GC redeem 2 error %s %s" % (gcRedeemResp2.status_code, gcRedeemResp2.text))
 
 #
-## End Stolen Code
+## End "borrowed" Code
 #
 
-
+# Setup Garmin
 session = requests.Session()
-
 _get_session()
 
-import json
+# Setup Strava
+strava = stravalib.Client( access_token=config.STRAVA_ACCESS_TOKEN)
 
-activities = session.get( 'http://connect.garmin.com/proxy/activity-search-service-1.0/json/activities?&limit=1' ).text
-meow = json.loads( activities )
+# Load Already Uploaded IDs
+pickle_filename = 'data.pkl'
+pickle_file = open( pickle_filename, 'rb' )
 
-activity_id = meow['results']['activities'][0]['activity']['activityId']
-activity_name = meow['results']['activities'][0]['activity']['activityName']['value']
-activity_type = meow['results']['activities'][0]['activity']['activityType']['key']
+try:
+    uploaded_ids = pickle.load(pickle_file)
+except:
+    uploaded_ids = []
 
-gpx_file = session.get( 'http://connect.garmin.com/proxy/activity-service-1.1/gpx/activity/' + activity_id + '?full=true' ).text
+pickle_file.close()
 
-# Replace Garmin Connect metadata with metadata for the device I'm using
-gpx_file = gpx_file.replace( 'Garmin Connect', 'Garmin Edge 810' )
+# Grab the last 10 activities from Garmin Connect
+number_of_activities = 10
+activities = session.get( 'http://connect.garmin.com/proxy/activity-search-service-1.0/json/activities?&limit=' + number_of_activities ).text
+response = json.loads( activities )['results']['activities']
 
-moo = open( 'test.gpx', 'w' )
-moo.write( gpx_file )
-moo.close()
+# Iterate through each of the returned activities and upload the ones that aren't already there
+for activity_record in response:
+    temporary_gpx_filename = 'temp.gpx'
 
-gpx_file = open( 'test.gpx', 'r' )
+    activity_id = activity_record['activity']['activityId']
+    #activity_name = activity_record['activity']['activityName']['value']
+    #activity_type = activity_record['activity']['activityType']['key']
+
+    # Got this URL through the Garmin connect website
+    gpx_stream = session.get( 'http://connect.garmin.com/proxy/activity-service-1.1/gpx/activity/' + activity_id + '?full=true' ).text
+
+    # Replace Garmin Connect metadata with metadata for the device I'm using
+    # This allows it to show up on the Strava page, and for Strava to actually trust the Barometric data in the file
+    gpx_stream = gpx_stream.replace( 'Garmin Connect', 'Garmin Edge 810' )
+
+    # Stravalib requires that a file be passed to it...
+    # There is probably a better way to do this then to write/read/delete a file on the actual filesystem
+    gpx_file = open( temporary_gpx_filename, 'w' )
+    gpx_file.write( gpx_file )
+    gpx_file.close()
+
+    gpx_file = open( temporary_gpx_filename, 'r' )
 
 
-from stravalib import Client, unithelper
-strava = Client( access_token=config.STRAVA_ACCESS_TOKEN)
+    # Skip if we've already uploaded it
+    if activity_id in uploaded_ids:
+        continue
 
-strava.upload_activity( gpx_file, 'gpx' )
+    try:
+        strava.upload_activity( gpx_file, 'gpx' )
+        uploaded_ids.append( activity_id )
+    except stravalib.exc.ActivityUploadFailed:
+        uploaded_ids.append( activity_id )
+
+    gpx_file.close()
+    os.unlink( temporary_gpx_filename )
+
+pickle_file = open( pickle_filename, 'wb' )
+pickle.dump( uploaded_ids, pickle_file )
+pickle_file.close()
