@@ -5,13 +5,13 @@ import pickle
 import os
 import json
 import stravalib
+import fcntl, struct, time
 
 #
 ## "Borrowed" and modified from https://github.com/cpfair/tapiriik/blob/master/tapiriik/services/GarminConnect/garminconnect.py#L188
 #
 
 def _rate_limit():
-  import fcntl, struct, time
 
   min_period = 1 # I appear to been banned from Garmin Connect while determining this.
 
@@ -22,7 +22,7 @@ def _rate_limit():
     last_req_start = 0
 
   try:
-    print("Have lock")
+    #print("Have lock")
 
 
     wait_time = max(0, min_period - (time.time() - last_req_start))
@@ -30,7 +30,7 @@ def _rate_limit():
 
     last_req_start = time.time()
 
-    print("Rate limited for %f" % wait_time)
+    #print("Rate limited for %f" % wait_time)
   finally:
     last_req_start = time.time()
 
@@ -98,7 +98,7 @@ pickle_file.close()
 
 # Grab the last 10 activities from Garmin Connect
 number_of_activities = 10
-activities = session.get( 'http://connect.garmin.com/proxy/activity-search-service-1.0/json/activities?&limit=' + number_of_activities ).text
+activities = session.get( 'http://connect.garmin.com/proxy/activity-search-service-1.0/json/activities?&limit=' + str( number_of_activities ) ).text
 response = json.loads( activities )['results']['activities']
 
 # Iterate through each of the returned activities and upload the ones that aren't already there
@@ -119,7 +119,7 @@ for activity_record in response:
     # Stravalib requires that a file be passed to it...
     # There is probably a better way to do this then to write/read/delete a file on the actual filesystem
     gpx_file = open( temporary_gpx_filename, 'w' )
-    gpx_file.write( gpx_file )
+    gpx_file.write( gpx_stream )
     gpx_file.close()
 
     gpx_file = open( temporary_gpx_filename, 'r' )
@@ -127,13 +127,16 @@ for activity_record in response:
 
     # Skip if we've already uploaded it
     if activity_id in uploaded_ids:
+        print "Already Uploaded Garmin Activity ID: " + activity_id + '...skipping...'
         continue
 
     try:
         strava.upload_activity( gpx_file, 'gpx' )
         uploaded_ids.append( activity_id )
+        print "Uploaded Garmin Activity ID: " + activity_id
     except stravalib.exc.ActivityUploadFailed:
         uploaded_ids.append( activity_id )
+        print "Problem Uploading Garmin Activity ID: " + activity_id + "....probably a dupe...skipping...."
 
     gpx_file.close()
     os.unlink( temporary_gpx_filename )
