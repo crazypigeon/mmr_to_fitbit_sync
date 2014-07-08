@@ -8,7 +8,7 @@ client = Client()
 if len( sys.argv ) == 1:
 
   url = client.authorization_url(client_id=STRAVA_CLIENT_ID,
-                                           redirect_uri='http://localhost' )
+                                           redirect_uri='http://localhost', scope='view_private,write' )
   print "Paste this URL in your browser:"
   print
   print url
