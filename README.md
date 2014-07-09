@@ -1,8 +1,14 @@
 ## Overview
 
-This is a short script that will take data from the Map My Ride and Strava services and transfer it over to FitBit as activity records.
+This repo contains a small collection of scripts I use to copy my fitness data between services.
 
-While most of this stuff should work with all activity types in Map My Fitness, I am only focused on the bicycling activity types because they map directly to the "Bicycling" FitBit activity and that's what I care about at the moment. I will likely add support for other activities as I try them :)
+I run them once around 15 minutes using a cron job on my Raspberry Pi.
+
+Right now the main focus is Garmin Connect to Strava and then Strava to FitBit.
+
+In the past it was MapMyRide to Fitbit.
+
+Most of the scripts are for copying cycling related data, however the MapMyFitness scripts contain information for transferring hiking activities as well.
 
 ## Requirements
 
@@ -29,3 +35,7 @@ You can generate the user key and secret for the FitBit API by running this scri
 #### MapMyFitness
 
 MapMyFitness authorization tokens can be generated using the [MapMyFitness API Explorer](https://www.mapmyapi.com/io-docs)
+
+#### Strava
+
+Use the get_strava_access_token.py script to generate a token.
