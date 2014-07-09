@@ -87,14 +87,14 @@ strava = stravalib.Client( access_token=config.STRAVA_ACCESS_TOKEN)
 
 # Load Already Uploaded IDs
 pickle_filename = 'data.pkl'
-pickle_file = open( pickle_filename, 'rb' )
 
 try:
-    uploaded_ids = pickle.load(pickle_file)
+  pickle_file = open( pickle_filename, 'rb' )
+  uploaded_ids = pickle.load(pickle_file)
+  pickle_file.close()
 except:
     uploaded_ids = []
 
-pickle_file.close()
 
 # Grab the last 10 activities from Garmin Connect
 number_of_activities = 10
