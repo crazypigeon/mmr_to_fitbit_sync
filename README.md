@@ -2,7 +2,7 @@
 
 This repo contains a small collection of scripts I use to copy my fitness data between services.
 
-I run them once around 15 minutes using a cron job on my Raspberry Pi.
+I have each script run every 15 minutes offset (GC->Strava and then Strava->Fitbit) using a cron job on my Raspberry Pi.
 
 Right now the main focus is Garmin Connect to Strava and then Strava to FitBit.
 
